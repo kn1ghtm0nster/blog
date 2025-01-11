@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import authenticate
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -54,3 +56,32 @@ class UserSerializer(serializers.ModelSerializer):
     def get_admin(self, obj):
         # Map 'admin' to 'is_superuser' field
         return obj.is_superuser
+
+
+class TokenSerializer(serializers.Serializer):
+    """
+    Serializer for user authenication and
+    token generation
+    """
+
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        if username and password:
+            user = authenticate(request=self.context.get(
+                'request'), username=username, password=password)
+
+            if not user:
+                raise serializers.ValidationEror(
+                    'Invalid credentials. Please try again.')
+
+        else:
+            raise serializers.ValidationError(
+                'Username and Password are required')
+
+        attrs['user'] = user
+        return attrs

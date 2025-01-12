@@ -76,7 +76,7 @@ class TokenSerializer(serializers.Serializer):
                 'request'), username=username, password=password)
 
             if not user:
-                raise serializers.ValidationEror(
+                raise serializers.ValidationError(
                     'Invalid credentials. Please try again.')
 
         else:

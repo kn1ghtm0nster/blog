@@ -77,3 +77,65 @@ class TestRegisterSerializer:
 
         assert serializer.is_valid() is False
         assert 'password' in serializer.errors
+
+
+@pytest.mark.django_db
+class TestTokenSerializer:
+    def test_valid_credentials(self, create_user):
+        create_user(username='tokenuser', email='token@example.com',
+                    password='TokenPass123!')
+        data = {
+            'username': 'tokenuser',
+            'password': 'TokenPass123!'
+        }
+        serializer = TokenSerializer(data=data)
+
+        assert serializer.is_valid() is True
+        assert 'user' in serializer.validated_data
+        assert serializer.validated_data['user'].username == 'tokenuser'
+
+    def test_invalid_username(self, create_user):
+        create_user(username='tokenuser', email='token@example.com',
+                    password='TokenPass123!')
+        data = {
+            'username': 'invaliduser',
+            'password': 'TokenPass123!'
+        }
+        serializer = TokenSerializer(data=data)
+
+        assert serializer.is_valid() is False
+        assert serializer.errors['non_field_errors'][0] == 'Invalid credentials. Please try again.'
+
+    def test_invalid_password(self, create_user):
+        create_user(username='tokenuser', email='token@example.com',
+                    password='TokenPass123!')
+        data = {
+            'username': 'tokenuser',
+            'password': 'InvalidPass123!'
+        }
+        serializer = TokenSerializer(data=data)
+
+        assert serializer.is_valid() is False
+        assert serializer.errors['non_field_errors'][0] == 'Invalid credentials. Please try again.'
+
+    def test_missing_username(self, create_user):
+        create_user(username='tokenuser', email='token@example.com',
+                    password='TokenPass123!')
+        data = {
+            'password': 'TokenPass123!'
+        }
+        serializer = TokenSerializer(data=data)
+
+        assert serializer.is_valid() is False
+        assert serializer.errors['username'][0] == 'This field is required.'
+
+    def test_missing_password(self, create_user):
+        create_user(username='tokenuser', email='token@example.com',
+                    password='TokenPass123!')
+        data = {
+            'username': 'tokenuser'
+        }
+        serializer = TokenSerializer(data=data)
+
+        assert serializer.is_valid() is False
+        assert serializer.errors['password'][0] == 'This field is required.'

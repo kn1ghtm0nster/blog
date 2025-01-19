@@ -3,6 +3,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.models import User
 
 from .serializers import UserSerializer
+from .permissions import IsOwnerOrAdmin
 
 
 class UserPagination(PageNumberPagination):
@@ -38,3 +39,13 @@ class UserListApi(generics.ListAPIView):
 
     # apply custom pagination
     pagination_class = UserPagination
+
+
+class UserDetailApi(generics.RetrieveAPIView):
+    """
+    API view to retrieve details of a single user.
+    Accessible to the user themselves OR admin users.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]

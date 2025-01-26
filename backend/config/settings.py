@@ -177,21 +177,45 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '[{asctime}] {levelname} {name}: {message}',
+            'style': '{',
+        }
+    },
     'handlers': {
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR / 'logs/app.log',
+            'maxBytes': 10485760,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'standard',
         },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        }
     },
     'loggers': {
         'django': {
             'handlers': ['file'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
         'users': {
-            'handlers': ['file'],
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'rest_framework': {
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         }

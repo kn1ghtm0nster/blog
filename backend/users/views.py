@@ -1,9 +1,16 @@
-from rest_framework import generics, permissions
+from calendar import c
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.models import User
+from django.db import transaction
+import logging
 
 from .serializers import UserSerializer, UserUpdateSerializer
 from .permissions import IsOwnerOrAdmin
+
+# Initialize logger for this file
+logger = logging.getLogger(__name__)
 
 
 class UserPagination(PageNumberPagination):
@@ -71,3 +78,34 @@ class UserUpdateApi(generics.UpdateAPIView):
         context = super(UserUpdateApi, self).get_serializer_context()
         context.update({'request': self.request})
         return context
+
+
+class UserDeleteApi(generics.DestroyAPIView):
+    """
+    API view to delete a specific user's profile.
+    Accessible by the user themselves or admin users.
+    """
+    queryset = User.objects.all()
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+    # Ensures the deletion is atomic (all or nothing)
+    # If anything fails, the transaction is rolled back! :)
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        """
+        Handles the DELETE request to delete a user and all associated
+        data.
+        """
+        try:
+            user = self.get_object()  # retrieves the User object
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        self.perform_destroy(user)
+        response_data = {'message': 'deleted'}
+
+        # Log deletion
+        logger.info(f"User deleted: {user.username} deleted by {
+                    request.user.username}.")
+
+        return Response(response_data, status=status.HTTP204_NO_CONTENT)

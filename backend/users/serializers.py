@@ -78,8 +78,15 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # Handle admin status update
         if admin_status is not None:
-            instance.is_staff = admin_status
-            instance.is_superuser = admin_status
+            # Check if the requesting user is admin
+            request = self.context.get('request')
+            if request and request.user.is_staff:
+                instance.is_staff = admin_status
+                instance.is_superuser = admin_status
+            else:
+                raise serializers.ValidationError(
+                    {'admin': 'You do not have permission to modify the admin field.'}
+                )
 
         instance.save()
         return instance

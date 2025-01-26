@@ -2,7 +2,7 @@ from rest_framework import generics, permissions
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.models import User
 
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UserUpdateSerializer
 from .permissions import IsOwnerOrAdmin
 
 
@@ -49,3 +49,25 @@ class UserDetailApi(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+
+class UserUpdateApi(generics.UpdateAPIView):
+    """
+    API view to update a specific user's profile.
+    Accessible to the user themselves OR admin users.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_serializer_context(self):
+        """
+        Adds the request to the serializer context.
+        This is needed for the serializer to access the requesting
+        user.
+        """
+
+        # include ther request object (not done by default so override of this method is required)
+        context = super(UserUpdateApi, self).get_serializer_context()
+        context.update({'request': self.request})
+        return context

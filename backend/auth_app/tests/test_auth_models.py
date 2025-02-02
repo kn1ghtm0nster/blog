@@ -52,8 +52,8 @@ class TestUserModel:
         )
 
         assert user.password != 'SecurePass123!'
-        # Default hashing prefix in Django
-        assert user.password.startswith('pbkdf2_')
+        # Default hashing prefix for Argon2
+        assert user.password.startswith('argon2$')
 
     def test_string_representation(self):
         user = User.objects.create_user(

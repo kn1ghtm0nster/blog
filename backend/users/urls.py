@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserDetailApi, UserListApi, UserUpdateApi, UserDeleteApi
+from users.views import UserDetailApi, UserListApi, UserUpdateApi, UserDeleteApi
 
 urlpatterns = [
     path('users/', UserListApi.as_view(), name='user-list'),

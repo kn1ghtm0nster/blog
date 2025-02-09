@@ -105,7 +105,7 @@ class UserDeleteApi(generics.DestroyAPIView):
         response_data = {'message': 'deleted'}
 
         # Log deletion
-        logger.info(f"User deleted: {user.username} deleted by {
-                    request.user.username}.")
+        logger.info(
+            f"User deleted: {user.username} deleted by {request.user.username}.")
 
         return Response(response_data, status=status.HTTP_204_NO_CONTENT)

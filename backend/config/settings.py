@@ -16,6 +16,9 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(exist_ok=True, parents=True)
+
 # JWT settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # Token expires after 1 day
@@ -187,7 +190,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs/app.log',
+            'filename': LOG_DIR / 'app.log',
             'maxBytes': 10485760,  # 10 MB
             'backupCount': 5,
             'formatter': 'standard',
